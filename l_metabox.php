@@ -434,22 +434,8 @@ class lc_metabox {
 			$fields = $this->lcmb_get_boxfields($boxid);
 			  	foreach($fields as $field)
 			  	{
-				  if($field->fld_inputtype == 'association')
-				  {
-				  		//$fld_value = substr($_POST[$field->fld_name."_name"],0, strlen($_POST[$field->fld_name."_name"])-1);
-				  		//$fld_value = $_POST[$field->fld_name];
-					  	#if($_POST[$field->fld_name."_name"])
-					  	#{
-					  		$fld_value = substr($_POST[$field->fld_name."_name"],0, strlen($_POST[$field->fld_name."_name"])-1);
-					  		update_post_meta( $post_id, $field->fld_name, $fld_value );
-					  	#}
-					  	#if($_POST['country_id']){
-					  	#	update_post_meta( $post_id, $field->fld_name, $_POST['country_id'] );
-					  	#}
-				  }else{
 				  	$fld_value = $_POST[$field->fld_name];	
 				  	update_post_meta( $post_id, $field->fld_name, $fld_value );
-				  }
 				}
 		}
 	}
@@ -465,9 +451,6 @@ class lc_metabox {
 			}
 			if($field->fld_inputtype == "textarea"){
 				$sdstr .= $this->textarea_field($post->ID, $field->fld_name, $field->fld_label);		
-			}
-			if($field->fld_inputtype == "association"){
-				$sdstr .= $this->assoc_field($post->ID, $field->fld_name, $field->fld_label, $field->post_type);		
 			}
 			if($field->fld_inputtype == "dropdown"){
 				$sdstr .= $this->dropdown($post->ID, $field->fld_name, $field->fld_label,$field->dropdownoptions);		
@@ -563,83 +546,7 @@ class lc_metabox {
 		return $sdstr;
 	}
 	
-	function assoc_field($postid, $field, $label, $post_type)
-	{
-		add_thickbox(); 
-		$meta_value = get_post_meta( $postid, $field, true );
-		$sdstr .= '
-		    <div id="'.$field.'_divid" class="find-box" style="display:none;">
-			<div id="find-posts-head" class="find-box-head">
-				Find Posts or Pages
-				<div id="find-posts-close" class="'.$field.'-close"></div>
-			</div>
-			<div class="find-box-inside">
-			<div class="find-box-search">
-				<input id="affected" type="hidden" value="166" name="media[]">
-				<input id="_ajax_nonce" type="hidden" value="698797e4c2" name="_ajax_nonce">
-				<label class="screen-reader-text" for="find-posts-input">Search</label>
-				<input id="find-posts-input" type="text" value="" name="ps">
-				<span class="spinner" style="display: none;"></span>
-				<input id="find-posts-search" class="button" type="button" value="Search">
-				<div class="clear"></div>
-				</div>
-			<div id="find-posts-response">
-			<table class="widefat">
-			<thead>
-			<tr>
-			<th class="found-radio">
-			<th>Title</th>
-			</tr>
-			</thead>
-			<tbody>';
-
-			$values_list = explode(',', $meta_value);
-			wp_reset_postdata();
-			$args = array(
-				'post_type' => $post_type,
-				'post_status' => 'publish'
-			);
-			$query = new wp_query($args);
-			if ( $query->have_posts() ) {
-				$i = 1;
-				while ( $query->have_posts() ) {
-					$alternate = ($i % 2 == 0) ? 'alternate' : '';
-					$query->the_post();
-					$postid= get_the_ID();
-					$sdstr .= '<tr class="found-posts '.$alternate.'">';
-					$sdstr .= '<td class="found-radio">';
-					$checked = in_array(get_the_ID(), $values_list) ? 'checked' : '';
-					$sdstr .= '<input id="found-get_the_ID()" '.$$checked.' type="checkbox" class="'.$field.'select" value="'.get_the_ID().'" name="'.$field.'_id">					</td>';
-					$sdstr .= '<td><label for="found-154">'.get_the_title().'</label></td>';
-					$i++;
-				}
-				echo '</tr>';
-			} else {
-				// no posts found
-			}
-			wp_reset_postdata();
-
-			$sdstr .= '</table>
-			</div><BR>
-			<input id="'.$field.'-btn" class="button button-primary button-large" type="submit" value="Done" accesskey="d" name="save">
-			</div>
-	     <p>
-		 ajaxOverFlow.html?keepThis=true&TB_iframe=true&height=300&width=500
-	          This is my hidden content! It will appear in ThickBox when the link is clicked.
-	     </p>
-		</div>
-		<p>
-		<a href="#TB_inline?width=600&height=550&inlineId='.$field.'_divid" class="thickbox">attach this post with '.$label.'</a>
-		</p>';
-		if(strlen($meta_value)>0)
-		{
-			$meta_value = $meta_value.',';
-		}
-		$sdstr .= '<input type="hidden" name="'.$field.'_name" id="'.$field.'_name" value="'.$meta_value.'">';
-		$sdstr .= $this->parseassociationjs($field);
-		return $sdstr;
-	}
-	
+		
 	function lcmb_get_boxfields($boxid)
 	{
 		global $wpdb;
@@ -651,32 +558,7 @@ class lc_metabox {
 		return $fields;
 	}
 	
-	function parseassociationjs($field)
-	{
-		$sdstr .='
-		<script>
-		jQuery("#'.$field.'_name").val
-		jQuery(document).ready(function() {
-		  jQuery(".'.$field.'-close").click(function() {
-			  tb_remove();
-		  });
-		  jQuery("#'.$field.'-btn").click(function() {
-			  tb_remove();
-		  });
-		   jQuery("input:checkbox").click(function() {
-	        var output = "";
-	        jQuery(".'.$field.'select").each(function() {
-				if (this.checked) {
-	            	output += jQuery(this).val() + ",";
-				}
-	        });
-	        	jQuery("#'.$field.'_name").val(output.trim());
-	    	});
-		});
-				</script>';
-			return $sdstr;
-	}
-	
+		
 
 	function lcmb_add_field()
 	{
@@ -717,22 +599,13 @@ class lc_metabox {
 		<select id="fld_inputtype" name="fld_inputtype">
 		<option value="text">Text</option>
 		<option value="textarea">TextArea</option>
-		<option value="association">association</option>
 		<option value="dropdown">Dropdown</option>
 		<option value="dropdownyn">Yes/no Dropdown</option>
-		<option value="file">File Upload</option>
 		<option value="DateField">Date Field</option>
 		</select>		
 		</div>
 		';
 		
-		$sdstr .='
-		<div class="form-field" id="postassocextra" style="display:none;">
-		<label for="fld_post_type">Associaion source post Type :</label>
-		<input type="text" name="fld_post_type" id="fld_post_type" value="" size=40>
-		<p>used for post association field only</p>
-		</div>
-		';
 
 		$sdstr .='
 		<div class="form-field" id="dropdownextra" style="display:none;">
@@ -761,11 +634,7 @@ class lc_metabox {
 					{
 						jQuery("#dropdownextra").show();
 					}
-					if(jQuery("#fld_inputtype").val() == "association")
-					{
-						jQuery("#postassocextra").show();
-					}
-
+					
 					jQuery("#fld_name").bind("keypress", function (event) {
 						var keyCode = event.keyCode || event.which
 						if (keyCode == 8 || (keyCode >= 35 && keyCode <= 40) || keyCode==46) 
@@ -785,9 +654,7 @@ class lc_metabox {
 					  if(jQuery("#fld_inputtype").val() == "dropdown"){
 					    jQuery("#dropdownextra").show();
 					  }
-					  if(jQuery("#fld_inputtype").val() == "association"){
-					    jQuery("#postassocextra").show();
-					  }
+
 					});
 				});
 			</script>';
@@ -853,21 +720,10 @@ class lc_metabox {
 		$sdstr .='<option '.$selected.' value="dropdown">Dropdown</option>';	
 		$selected = ($fieldrow->fld_inputtype == 'dropdownyn') ? 'selected' : '' ;
 		$sdstr .='<option '.$selected.' value="dropdownyn">yes/no Dropdown</option>';
-		$selected = ($fieldrow->fld_inputtype == 'file') ? 'selected' : '' ;
-		$sdstr .='<option '.$selected.' value="file">File Upload</option>';
-		$selected = ($fieldrow->fld_inputtype == 'association') ? 'selected' : '' ;
-		$sdstr .='<option '.$selected.' value="association">Association field</option>';
 		$selected = ($fieldrow->fld_inputtype == 'DateField') ? 'selected' : '' ;
 		$sdstr .='<option '.$selected.' value="DateField">Date Field</option>';
 		$sdstr .='</select>		
 		</div>';
-
-		$sdstr .= '<div class="form-field" id="postassocextra" style="display:none;">
-		<label for="fld_name">Associaion source post Type :</label>
-		<input type="text" name="fld_post_type" id="fld_post_type" value="'.$fieldrow->post_type.'" size=40>
-		<p>the Slug of the custom posttype you want your post to be associated with</p>
-		</div>
-		';
 
 		$sdstr .='
 		<div class="form-field" id="dropdownextra" style="display:none;">

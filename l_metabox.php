@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Custom Metabox
-Plugin URI: http://www.localhostph.com/
+Plugin URI: http://www.norbertferia.com/
 Description: Custom Metabox v 1.3 plugin enbales you to create metabox and metabox fields from the dashboard.
 Author: Norbert Feria
 Version: 1.3.2
-Author URI: ttp://www.localhostph.com/
+Author URI: ttp://www.norbertferia.com/
 
 */
 
